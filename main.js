@@ -64,7 +64,7 @@ function preventEmptyInput() {
   if(buttonIsChecked) {
     errorMessage.classList.add('hidden');
     displayRecipe();
-  } else if (buttonIsChecked === false) {
+  } else if (!buttonIsChecked) {
     errorMessage.classList.remove('hidden');
   }
 };
@@ -89,10 +89,14 @@ function clearForm() {
   youShouldMakeView.classList.toggle('hidden');
   addToFavoritesButton.innerText = 'Add to Favorites! ♥︎'
   addToFavoritesButton.classList.remove('fav-added');
-  mainDishButton.checked = false;
-  dessertButton.checked = false;
-  sideButton.checked = false;
+  clearRadioButtons()
 };
+
+function clearRadioButtons(){
+  for(var i = 0; i < allRadioButtons.length ; i ++) {
+    allRadioButtons[i].checked = false;
+  }
+}
 
 function hideElement(element) {
   element.classList.add('hidden');
