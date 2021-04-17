@@ -18,29 +18,12 @@ var favRecipesList = document.querySelector('.fav-recipe-box');
 var allRadioButtons = document.querySelectorAll('.radio-button');
 var errorMessage = document.querySelector('.error');
 
-//////////// VARIABLES ////////////
-var favoriteRecipes = [];
-
 //////////// EVENT LISTENERS ////////////
 letsCookButton.addEventListener('click', displayRandomFood);
 clearButton.addEventListener('click', clearForm);
 viewFavoritesButton.addEventListener('click', viewFavoritesPage);
 addToFavoritesButton.addEventListener('click', addToFavorites);
 homeButton.addEventListener('click', goHome);
-
-favRecipesList.addEventListener('click', function(event){
-  if(event.target.className === 'delete'){
-    var recipe = event.target.parentElement;
-    var targetRecipe = recipe.firstElementChild.innerText;
-    recipe.parentNode.removeChild(recipe);
-  }
-  for(var i = 0; i < favoriteRecipes.length; i ++) {
-    if(favoriteRecipes[i] === targetRecipe) {
-      favoriteRecipes.splice(i, 1);
-    }
-  }
-});
-
 
 //////////// FUNCTIONS AND EVENT HANDLERS ////////////
 function randomFoods(foodType) {
@@ -96,7 +79,7 @@ function clearRadioButtons(){
   for(var i = 0; i < allRadioButtons.length ; i ++) {
     allRadioButtons[i].checked = false;
   }
-}
+};
 
 function hideElement(element) {
   element.classList.add('hidden');
@@ -106,12 +89,22 @@ function showElement(element) {
   element.classList.remove('hidden');
 };
 
+function goHome() {
+  showElement(leftBox);
+  showElement(rightBox);
+  hideElement(favRecipesBox);
+  hideElement(homeButton);
+  clearForm();
+};
+
 function viewFavoritesPage() {
   hideElement(leftBox);
   hideElement(rightBox);
   showElement(favRecipesBox);
   showElement(homeButton);
   favRecipesList.innerHTML = '';
+
+  var favoriteRecipes = getFavoritesFromLocalStorage();
 
   for(var i = 0; i <favoriteRecipes.length ; i++){
     favRecipesList.innerHTML += `
@@ -125,16 +118,26 @@ function viewFavoritesPage() {
   };
 };
 
-function goHome() {
-  showElement(leftBox);
-  showElement(rightBox);
-  hideElement(favRecipesBox);
-  hideElement(homeButton);
-  clearForm();
+function setFavoritesInLocalStorage(favoriteRecipes) {
+  localStorage.setItem('favoriteRecipes', favoriteRecipes);
+};
+
+function getFavoritesFromLocalStorage() {
+  var favoriteRecipes = localStorage.getItem('favoriteRecipes');
+  //do some defensive programming, check if localStorage even has recipes
+  //if it does, convert string to array
+  //if not, return an empty array
+  if (favoriteRecipes) {
+    return favoriteRecipes.split(',');
+  } else {
+    return [];
+  }
 };
 
 function addToFavorites() {
   var currentRecipe = formOutput.innerText;
+  var favoriteRecipes= getFavoritesFromLocalStorage();
+
   var isInArray = false;
   for(var i = 0; i < favoriteRecipes.length; i ++) {
     if (favoriteRecipes[i] === currentRecipe) {
@@ -143,7 +146,21 @@ function addToFavorites() {
   }
   if (!isInArray) {
     favoriteRecipes.push(currentRecipe);
+    setFavoritesInLocalStorage(favoriteRecipes);
     addToFavoritesButton.innerText = 'Added to Favorites! ♥︎'
     addToFavoritesButton.classList.toggle('fav-added');
   }
 };
+
+favRecipesList.addEventListener('click', function(event){
+  if(event.target.className === 'delete'){
+    var recipe = event.target.parentElement;
+    var targetRecipe = recipe.firstElementChild.innerText;
+    recipe.parentNode.removeChild(recipe);
+  }
+
+  var favoriteRecipes = getFavoritesFromLocalStorage();
+  var targetIndex = favoriteRecipes.indexOf(targetRecipe);
+  favoriteRecipes.splice(targetIndex, 1);
+  setFavoritesInLocalStorage(favoriteRecipes);
+});
